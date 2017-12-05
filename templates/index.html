@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>首页</title>
+
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+
+</head>
+<body>
+<h1>问卷调查</h1>
+
+<div class="container">
+    <button class="btn btn-primary">添加问卷</button>
+    <table class="table">
+      <thead>
+      <tr>
+          <th>问卷调查名称</th>
+          <th>问卷调查班级</th>
+          <th>参与人数</th>
+          <th>问卷选项</th>
+          <th>调查地址</th>
+          <th>查看评分</th>
+          <th>操作</th>
+      </tr>
+      </thead>
+
+        <tbody>
+        {% for obj in question_naire_obj %}
+            <tr>
+            <td>{{ obj.title }}</td>
+            <td>{{ obj.cls.title }}</td>
+            <td>1/2</td>
+            <td><a href="/editor/questionnaire/{{ obj.id }}">编辑问卷</a></td>
+            <td><a href="">/student/evaluate/{{ obj.cls.id }}/{{ obj.id }}/</a></td>
+            <td><a href="">查看评分</a></td>
+            <td><a href="">删除</a></td>
+            </tr>
+
+        {% endfor %}
+
+
+        </tbody>
+    </table>
+
+
+</div>
+
+
+
+</body>
+</html>
