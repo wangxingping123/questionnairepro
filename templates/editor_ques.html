@@ -7,90 +7,72 @@
     <title>编辑问卷</title>
     <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
     <style>
+        .question{background-color: #ebebeb;}
+        .hide{
+            display: none;
+        }
+        ol {
+            padding: 0;
+            list-style: none;
+            counter-reset: sectioncounter
+        }
 
-        .question{background-color: #ebebeb;padding-bottom: 20px}
-        .title{color: silver}
+        ol > li:before {
+            content: '问题' counter(sectioncounter) ':';
+            counter-increment: sectioncounter;
+            font-size: 18px;
+            color: #d4d4d4;
+        }
+
+        ol > li:nth-of-type(odd) {
+            background-color: #f9f9f9;
+        }
+
+
     </style>
 </head>
 <body>
 <h2>编辑问卷表题目</h2>
 <div class="container">
-     <div id="questions">
+     <div >
      <p> <button class="btn btn-primary add_question">添加</button> <button class="btn btn-success">保存</button></p>
-        {% if questions %}
-         {% for question in questions %}
-    <div class="question">
-    <h4 class="title">问题{{ forloop.counter }}：<span  class="del_question glyphicon glyphicon-remove pull-right"></span></h4>
-    <div class="row">
-        <div class="col-md-1 col-md-offset-1">
-            <p>问题：</p>
-        </div>
-        <div class="col-md-7 ">
-            <textarea name="" id="text_area" cols="80" rows="2">{{ question.caption }}</textarea>
+        <ol id="questions">
+            {% for dict in data %}
+            <li class="question">
+            <span class="glyphicon glyphicon-remove pull-right del_question"></span>
+            <div class="row">
+               <div class="col-md-1 col-md-offset-1">
+                <p>问题：</p>
+            </div>
+            <div class="col-md-7">
+                <p qid="{{ dict.qid }}">{{ dict.form.caption }}</p>
+            </div>
 
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-1 col-md-offset-1">
-            <p>类型：</p>
-        </div>
-        <div class="col-md-7 ">
-              <select class="select_type">
-             {% for choice in question.question_types %}
-                 {% if choice.0 == question.type %}
-                 <option value="{{ choice.0 }}" selected>{{ choice.1 }}</option>
-                 {% else %}
-                   <option value="{{ choice.0 }}" >{{ choice.1 }}</option>
-                 {% endif %}
+            </div>
+            <div class="row">
+               <div class="col-md-1 col-md-offset-1">
+                <p>类型：</p>
+            </div>
+            <div class="col-md-8">
+                {{ dict.form.type }} <span class="glyphicon glyphicon-plus {{ dict.class }} add_option" style="color:blue;">添加选项</span>
+                <div class="{{ dict.class }}">
+                   {% for option in dict.options %}
+                    <p option_id="{{ option.option_id }}">内容：{{ option.form.name }}分值：{{ option.form.score }}
+                       <span class="glyphicon glyphicon-remove del_option"></span></p>
+
+                    {% endfor %}
+                </div>
+
+
+            </div>
+
+
+            </div>
+            </li>
             {% endfor %}
-              </select>
-            {% if question.type == 2 %}
-             <span  class="add_option glyphicon glyphicon-plus" style="color: blue">添加选项</span>
-               <div class="">
-                   {% for option in question.option_set.all %}
-                   <p>内容：<input type="text" value="{{ option.name }}">分值：<input type="text" value="{{ option.score }}"><span class="del_option glyphicon glyphicon-remove"></span></p>
-                   {% endfor %}
-               </div>
-               {% else %}
-                <span  class="add_option glyphicon glyphicon-plus hidden" style="color: blue">添加选项</span>
-               <div class="hidden">
-                   {% for option in question.option_set.all %}
-                   <p>内容：<input type="text" value="{{ option.name }}">分值：<input type="text" value="{{ option.score }}"><span class="del_option glyphicon glyphicon-remove"></span></p>
-                   {% endfor %}
-               </div>
-            {% endif %}
-
-        </div>
-    </div>
-    </div>
-    {% endfor %}
-            {% else %}
-    <div class="question">
-    <h4 class="title">问题{{ forloop.counter }}：<span  class="del_question glyphicon glyphicon-remove pull-right"></span></h4>
-    <div class="row">
-        <div class="col-md-1 col-md-offset-1">
-            <p>问题：</p>
-        </div>
-        <div class="col-md-7 ">
-            {{ form.caption }}
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-1 col-md-offset-1">
-            <p>类型：</p>
-        </div>
-        <div class="col-md-7 ">
-              {{ form.type }}
-              <span  class="add_option glyphicon glyphicon-plus hidden" style="color: blue">添加选项</span>
-               <div class="hidden">
-               </div>
-        </div>
-    </div>
-    </div>
-
-
-        {% endif %}
-
+            
+            
+        </ol>
     </div>
 
 
@@ -105,7 +87,7 @@
 <script>
     //添加问题事件
     $(document).on('click',".add_question",function () {
-       s='<div class="question"> <h4 class="title">问题：<span class="del_question glyphicon glyphicon-remove pull-right"></span></h4> <div class="row"> <div class="col-md-1 col-md-offset-1"> <p>问题：</p> </div> <div class="col-md-7 "> <textarea name="" id="text_area" cols="80" rows="2"></textarea> </div> </div> <div class="row"> <div class="col-md-1 col-md-offset-1"> <p>类型：</p> </div> <div class="col-md-7 "> <select class="select_type"> <option value="1" >打分(1~10)</option> <option value="2">单选</option> <option value="3">评价</option> </select> <span class="add_option glyphicon glyphicon-plus hidden" style="color: blue">添加选项</span> <div class="hidden"> </div> </div> </div> </div>'
+       s='<li class="question"> <span class="glyphicon glyphicon-remove pull-right del_question"></span> <div class="row"> <div class="col-md-1 col-md-offset-1"> <p>问题：</p> </div> <div class="col-md-7"> <p qid="None"><textarea name="caption" cols="80" rows="2" class="form-control" maxlength="64" required="" id="id_caption"></textarea></p> </div> </div> <div class="row"> <div class="col-md-1 col-md-offset-1"> <p>类型：</p> </div><div class="col-md-8"> <select name="type" class="select_type" required="" id="id_type"> <option value="" selected="">---------</option> <option value="1">打分(1~10)</option> <option value="2">单选</option> <option value="3">评价</option> </select> <span class="glyphicon glyphicon-plus hide add_option" style="color:blue;">添加选项</span> <div class="hide"> </div> </div> </div> </li>'
         $("#questions").append(s)
     });
 
@@ -113,25 +95,25 @@
     $(document).on('change','.select_type',function () {
 
         if ($(this).val()==2){
-            $(this).parent().children().last().removeClass("hidden");
-            $(this).next().removeClass("hidden")
+            $(this).next().removeClass("hide");
+            $(this).parent().children().last().removeClass("hide");
         }
         else {
-           $(this).parent().children().last().addClass("hidden");
-           $(this).next().addClass("hidden")
+           $(this).parent().children().last().addClass("hide");
+           $(this).next().addClass("hide")
         }
     });
 
     //删除问题事件
     $(document).on('click','.del_question',function () {
-       $(this).parent().parent().remove()
+       $(this).parent().remove()
     });
 
 
     //添加选项的事件
     $(document).on('click','.add_option',function () {
-      s='<p>内容：<input type="text">分值：<input type="text"><span class="del_option glyphicon glyphicon-remove"></span></p>'
-        $(this).parent().children().last().removeClass("hidden").append(s)
+      s='<p option_id=None>内容：<input type="text">分值：<input type="number"><span class="del_option glyphicon glyphicon-remove"></span></p>'
+          $(this).parent().children().last().append(s)
 
     });
 
