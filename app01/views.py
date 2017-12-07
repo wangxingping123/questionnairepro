@@ -47,7 +47,6 @@ def login(request):
     return render(request,"login.html")
 
 def index(request):
-
     if request.method=="POST":
         data={"flag":False}
         form=QuestionnaireForm(data=request.POST)
@@ -66,9 +65,54 @@ def index(request):
 
 def editor_ques(request,questionnaire_id):
     '''编辑问卷调查表问题'''
+    question_objs = models.Question.objects.filter(questionnaire_id=questionnaire_id)
 
+    if request.is_ajax():
+        questions_list=json.loads(request.body.decode("utf8"))
+
+        for question in questions_list:
+            #判断问题是在更新还是在添加
+            if question.get("qid") and question.get("qid") != 'None':
+                models.Question.objects.filter(id=int(question.get("qid"))).update(questionnaire_id=questionnaire_id,
+                                                         caption=question.get("qtitle"),
+                                                         type=int(question.get("qtype")))
+                for option in question.get("options",''):
+                    if option.get("option_id"):
+                        models.Option.objects.filter(id=int(option.get("option_id"))).update(
+                            name=option.get("option_name"),
+                            score=option.get("option_score"),
+                            question_id=int(question.get("qid"))
+                        )
+                    else:
+                        models.Option.objects.create(
+                            name=option.get("option_name"),
+                            score=option.get("option_score"),
+                            question_id=int(int(question.get("qid")))
+                        )
+            else:
+                question_obj=models.Question.objects.create(questionnaire_id=questionnaire_id,
+                                               caption=question.get("qtitle"),
+                                        type=int(question.get("qtype")))
+
+                for option in question.get("options",''):
+                    if option.get("option_id"):
+                        models.Option.objects.filter(id=int(option.get("option_id"))).update(
+                            name=option.get("option_name"),
+                            score=option.get("option_score"),
+                            question_id=int(question.get("qid"))
+                        )
+                    else:
+                        models.Option.objects.create(
+                            name=option.get("option_name"),
+                            score=option.get("option_score"),
+                            question_id=question_obj.id
+                        )
+
+
+
+        return HttpResponse(123)
+    #get请求 ，获取数据传到页面进行渲染
     def inner():
-        question_objs = models.Question.objects.filter(questionnaire_id=questionnaire_id)
         if question_objs:
             for obj in question_objs:
                 form=QuestionForm(instance=obj)
@@ -88,6 +132,12 @@ def editor_ques(request,questionnaire_id):
             yield {"form":QuestionForm(),"qid":None,"options":None,"class":"hide"}
 
 
+    return render(request,"editor_ques.html",{"data":inner(),"questionnaire_id":questionnaire_id})
 
-    return render(request,"editor_ques.html",{"data":inner()})
 
+def del_question(request):
+    data={"flag":False}
+    qid=request.GET.get("qid")
+    if models.Question.objects.filter(id=qid).delete():
+        data["flag"]=True
+    return HttpResponse(json.dumps(data))

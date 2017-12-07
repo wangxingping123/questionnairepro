@@ -35,17 +35,17 @@
 <h2>编辑问卷表题目</h2>
 <div class="container">
      <div >
-     <p> <button class="btn btn-primary add_question">添加</button> <button class="btn btn-success">保存</button></p>
-        <ol id="questions">
+     <p> <button class="btn btn-primary add_question">添加</button> <button class="btn btn-success" id="btn_save">保存</button></p>
+        <ol id="questions" questionnaire_id="{{ questionnaire_id }}">
             {% for dict in data %}
-            <li class="question">
+            <li class="question"  qid="{{ dict.qid }}">
             <span class="glyphicon glyphicon-remove pull-right del_question"></span>
             <div class="row">
                <div class="col-md-1 col-md-offset-1">
                 <p>问题：</p>
             </div>
-            <div class="col-md-7">
-                <p qid="{{ dict.qid }}">{{ dict.form.caption }}</p>
+            <div class="col-md-7 title">
+                <p>{{ dict.form.caption }}</p>
             </div>
 
             </div>
@@ -55,9 +55,9 @@
             </div>
             <div class="col-md-8">
                 {{ dict.form.type }} <span class="glyphicon glyphicon-plus {{ dict.class }} add_option" style="color:blue;">添加选项</span>
-                <div class="{{ dict.class }}">
+                <div >
                    {% for option in dict.options %}
-                    <p option_id="{{ option.option_id }}">内容：{{ option.form.name }}分值：{{ option.form.score }}
+                    <p option_id="{{ option.option_id }}" class="option">内容：{{ option.form.name }}分值：{{ option.form.score }}
                        <span class="glyphicon glyphicon-remove del_option"></span></p>
 
                     {% endfor %}
@@ -84,10 +84,11 @@
 
 
 <script src="/static/jquery-3.2.1.min.js"></script>
+<script src="/static/jquery.cookie.js"></script>
 <script>
     //添加问题事件
     $(document).on('click',".add_question",function () {
-       s='<li class="question"> <span class="glyphicon glyphicon-remove pull-right del_question"></span> <div class="row"> <div class="col-md-1 col-md-offset-1"> <p>问题：</p> </div> <div class="col-md-7"> <p qid="None"><textarea name="caption" cols="80" rows="2" class="form-control" maxlength="64" required="" id="id_caption"></textarea></p> </div> </div> <div class="row"> <div class="col-md-1 col-md-offset-1"> <p>类型：</p> </div><div class="col-md-8"> <select name="type" class="select_type" required="" id="id_type"> <option value="" selected="">---------</option> <option value="1">打分(1~10)</option> <option value="2">单选</option> <option value="3">评价</option> </select> <span class="glyphicon glyphicon-plus hide add_option" style="color:blue;">添加选项</span> <div class="hide"> </div> </div> </div> </li>'
+       s='<li class="question" qid> <span class="glyphicon glyphicon-remove pull-right del_question"></span> <div class="row"> <div class="col-md-1 col-md-offset-1"> <p>问题：</p> </div> <div class="col-md-7"> <p><textarea name="caption" cols="80" rows="2" class="form-control" maxlength="64" required="" id="id_caption"></textarea></p> </div> </div> <div class="row"> <div class="col-md-1 col-md-offset-1"> <p>类型：</p> </div><div class="col-md-8"> <select name="type" class="select_type" required="" id="id_type"> <option value="" selected="">---------</option> <option value="1">打分(1~10)</option> <option value="2">单选</option> <option value="3">评价</option> </select> <span class="glyphicon glyphicon-plus hide add_option" style="color:blue;">添加选项</span> <div> </div> </div> </div> </li>'
         $("#questions").append(s)
     });
 
@@ -96,23 +97,39 @@
 
         if ($(this).val()==2){
             $(this).next().removeClass("hide");
-            $(this).parent().children().last().removeClass("hide");
+
         }
         else {
-           $(this).parent().children().last().addClass("hide");
+           $(this).parent().children().last().children().remove();
            $(this).next().addClass("hide")
         }
     });
 
     //删除问题事件
     $(document).on('click','.del_question',function () {
-       $(this).parent().remove()
+        var this_tag=$(this)
+        if (this_tag.parent().attr("qid") && this_tag.parent().attr("qid") != 'None'){
+           $.ajax({
+               url:"/del_question/?qid="+$(this).parent().attr("qid"),
+               success:function (data) {
+                   var data=JSON.parse(data);
+                   if(data["flag"]){
+                      this_tag.parent().remove()
+                   }
+               }
+           })
+
+        }
+         else {
+              this_tag.parent().remove()
+            }
+
     });
 
 
     //添加选项的事件
     $(document).on('click','.add_option',function () {
-      s='<p option_id=None>内容：<input type="text">分值：<input type="number"><span class="del_option glyphicon glyphicon-remove"></span></p>'
+      s='<p option_id class="option">内容：<input type="text" name="name" value="" maxlength="32" required="" id="id_name">分值：<input type="number" name="score" value="" required="" id="id_score"> <span class="glyphicon glyphicon-remove del_option"></span></p>';
           $(this).parent().children().last().append(s)
 
     });
@@ -121,8 +138,53 @@
     //删除选项事件
     $(document).on('click',".del_option",function () {
         $(this).parent().remove()
-    })
+    });
 
+    //给保存添加事件
+
+    $("#btn_save").click(function () {
+       //循环问题，取出所需数据
+    var question_list=[];
+    $(".question").each(function () {
+        var question_dic={};
+        question_dic={"qid":$(this).attr("qid"),"qtitle":$(this).find("#id_caption").val(),
+        "qtype":$(this).find(".select_type").val()};
+
+        if ($(this).find(".select_type").val()==2){
+
+            var option_dic={};
+            var option_list=[];
+            $.each($(this).find(".option"),function () {
+
+                option_dic={"option_id":$(this).attr("option_id"),"option_name":$(this).find("#id_name").val(),
+                "option_score":$(this).find("#id_score").val()};
+                option_list.push(option_dic)
+
+            });
+        }
+         question_dic["options"]=option_list;
+        question_list.push(question_dic)
+    });
+
+    //发送ajax请求，将数据发到后端进行处理
+     $.ajax({
+         url:"/editor/questionnaire/"+$("#questions").attr("questionnaire_id"),
+         type:"POST",
+         contentType:"json",
+         headers:{"X-CSRFToken":$.cookie('csrftoken')},
+         data:JSON.stringify(question_list),
+         success:function (data) {
+
+            alert("保存成功")
+
+         }
+
+
+
+     })
+
+
+    })
 
 
 </script>

@@ -19,8 +19,9 @@ from app01 import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^login/', views.login),
-    url(r'^index/', views.index),
+    url(r'^login/$', views.login),
+    url(r'^index/$', views.index),
+    url(r'^del_question/$', views.del_question),
     url(r'^editor/questionnaire/(?P<questionnaire_id>\d+)', views.editor_ques),
 
 
