@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <style>
+        ul{list-style-type:none}
+        ul li{display: inline-block;margin-left: 10px;font-size: 20px}
+        ul li input{width:20px;height:20px;}
+        body{background-color: #ebebeb}
+    </style>
+</head>
+<body>
+<h2>请认真填写本次调查问卷</h2>
+<h4>1,本班学生只能填写本班的问卷调查。</h4>
+<h4>2,一个学生只能对同一个问卷提交一次。</h4>
+<div class="container">
+
+    <form action="" method="post" novalidate>
+        {% csrf_token %}
+       {% for form in forms %}
+        <div class="text-justify">
+        <h4>{{ forloop.counter }},{{ form.label }} <span style="color: red">{{ form.errors }}</span>  </h4>
+        {{ form }}
+        </div>
+    {% endfor %}
+
+    <input type="submit" value="提交">
+    </form>
+
+
+</div>
+
+</body>
+</html>

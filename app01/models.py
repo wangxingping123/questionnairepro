@@ -80,6 +80,8 @@ class Answer(models.Model):
     student = models.ForeignKey(to="Student")
     question = models.ForeignKey(to="Question")
 
+
     val = models.IntegerField(null=True,blank=True)
+    oid=models.IntegerField(null=True,blank=True)
     content = models.CharField(max_length=255,null=True,blank=True)
 

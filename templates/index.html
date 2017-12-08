@@ -33,9 +33,9 @@
             <tr>
                 <td>{{ obj.title }}</td>
                 <td>{{ obj.cls.title }}</td>
-                <td>1/2</td>
+                <td>  {{ obj.count }}/{{ obj.cls.student_set.all.count }}</td>
                 <td><a href="/editor/questionnaire/{{ obj.id }}">编辑问卷</a></td>
-                <td><a href="">/student/evaluate/{{ obj.cls.id }}/{{ obj.id }}/</a></td>
+                <td><a href="/student/evaluate/{{ obj.cls.id }}/{{ obj.id }}">/student/evaluate/{{ obj.cls.id }}/{{ obj.id }}/</a></td>
                 <td><a href="">查看评分</a></td>
                 <td><a href="">删除</a></td>
             </tr>
